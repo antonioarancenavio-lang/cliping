@@ -1,40 +1,84 @@
-# MVP: Clipping automático para prédicas (nicho: iglesias hispanohablantes)
-Pipeline mínimo que convierte un vídeo largo (sermón/prédica) en clips verticales
-con subtítulos, listos para TikTok/Reels/Shorts.
+# Vigilia — web de clipping de prédicas
 
-## Cómo funciona (`pipeline.py`)
-1. **`transcribe.py`** — transcribe el vídeo localmente con `faster-whisper` (gratis, sin API de pago). Descarga el modelo la primera vez que se ejecuta.
-2. **`detect_highlights.py`** — **100% GRATIS, sin API de pago.** Usa reglas heurísticas (palabras clave típicas de una prédica, signos de exclamación/interrogación, duración ideal del fragmento) para elegir los 3-5 mejores momentos. Es menos preciso que una IA, pero sirve perfectamente para validar el negocio sin gastar nada.
-3. **`cut_clips.py`** — recorta cada fragmento con `ffmpeg`, lo reencuadra a formato vertical 9:16 y quema los subtítulos.
+## Por qué te daba 404
 
-**Ya probado y funcionando en este entorno de punta a punta**, sin ninguna clave de API: detección heurística de momentos + recorte + reencuadre + subtítulos quemados (ver `output/` con un vídeo de prueba real).
+Ese error venía de Vercel intentando servir una URL sin nada desplegado detrás.
+Es importante entender esto para no repetirlo: **el pipeline de clipping
+(transcripción con Whisper + recorte con ffmpeg) no puede correr en Vercel**,
+porque:
+- Las funciones serverless de Vercel tienen un límite de tiempo de ejecución corto; procesar un vídeo de 40 minutos tarda varios minutos.
+- No tienen `ffmpeg` instalado por defecto.
+- No guardan archivos entre peticiones (sistema de archivos efímero).
 
-### Cuando tengas presupuesto: `detect_highlights_ia.py`
-Está incluido y listo un segundo módulo, `detect_highlights_ia.py`, que hace lo mismo pero usando la API de Claude para una selección mucho más precisa (entiende contexto, no solo palabras clave). Cuesta céntimos por vídeo. Para activarlo:
-1. En `pipeline.py`, cambia `from detect_highlights import detect_highlights` por `from detect_highlights_ia import detect_highlights`.
-2. `export ANTHROPIC_API_KEY=sk-ant-tu-clave`
+Por eso este proyecto se divide en **dos partes que se despliegan en sitios distintos**:
 
-## Cómo probarlo tú
+```
+clipping-web/       -> Vercel (la página, estática, siempre gratis)
+clipping-backend/   -> Railway / Render / un VPS (procesa los vídeos)
+```
+
+## 1. La web (`clipping-web/`) → Vercel
+
+Es un único `index.html` sin build ni dependencias — cero configuración.
+
 ```bash
-pip install -r requirements.txt
-python3 pipeline.py ruta/a/tu_sermon.mp4 output/
+cd clipping-web
+git init && git add . && git commit -m "web de Vigilia"
+git branch -M main
+git remote add origin https://github.com/tu-usuario/vigilia-web.git
+git push -u origin main
 ```
 
-La primera ejecución descarga el modelo de Whisper (`small`, ~500MB); tarda un poco más esa vez. No hace falta ninguna clave de API para esta versión gratuita.
+Luego en [vercel.com](https://vercel.com) → **Add New Project** → importa ese repo.
+Como es HTML estático, Vercel lo detecta solo, sin "Framework Preset" que configurar.
+Con esto ya no te dará más 404: la web se sirve sola, aunque el backend
+todavía no exista (el formulario simplemente avisa de que falta conectarlo,
+en vez de fallar en silencio).
 
-## Qué falta para convertirlo en el SaaS
-- **Interfaz web** (subida de vídeo o enlace de YouTube, previsualización de clips, descarga) — encaja con tu stack de React + Vercel.
-- **Cola de procesamiento** (los vídeos de 40-60 min tardan varios minutos en transcribirse y recortarse): mover el procesamiento pesado a un worker/servidor en vez de una función serverless con límite de tiempo.
-- **Autenticación y planes de suscripción** (Stripe).
-- **Mejora del reencuadre**: ahora mismo el crop es centrado fijo; para un resultado más profesional habría que detectar y seguir al orador (face-tracking), como hacen los competidores.
-- **Validación con iglesias reales**: antes de invertir en la web completa, probar el pipeline con 5-10 sermones reales y mostrar los clips a un par de iglesias para confirmar que el criterio de selección de la IA acierta.
+## 2. El backend (`clipping-backend/`) → Railway o Render
 
-## Estructura de archivos
+Este es el que necesita quedarse encendido y con ffmpeg disponible.
+**Railway** es la opción más simple para empezar (tiene un plan gratuito con
+horas limitadas al mes, suficiente para validar):
+
+```bash
+cd clipping-backend
+git init && git add . && git commit -m "backend de Vigilia"
+git branch -M main
+git remote add origin https://github.com/tu-usuario/vigilia-backend.git
+git push -u origin main
 ```
-transcribe.py              # transcripción local (faster-whisper)
-detect_highlights.py       # selección de momentos GRATIS (reglas heurísticas)
-detect_highlights_ia.py    # selección de momentos con IA (API de Claude, cuando haya presupuesto)
-cut_clips.py                # recorte + subtítulos + reencuadre (ffmpeg)
-pipeline.py                 # orquesta los tres pasos
-requirements.txt
+
+En Railway: **New Project → Deploy from GitHub repo** → selecciona este repo.
+Railway detecta Python solo. Define el comando de arranque:
 ```
+uvicorn main:app --host 0.0.0.0 --port $PORT
+```
+Y añade un `nixpacks.toml` (incluido) para que instale `ffmpeg` en el contenedor.
+
+## 3. Conectar la web con el backend
+
+Una vez el backend esté desplegado, tendrás una URL tipo
+`https://vigilia-backend-production.up.railway.app`.
+
+Añade esta línea justo antes del `</body>` de `index.html`, con tu URL real:
+```html
+<script>window.VIGILIA_BACKEND_URL = "https://tu-backend.up.railway.app";</script>
+```
+
+Sube ese cambio a GitHub y Vercel redespliega solo.
+
+## Ya probado en este entorno
+- El backend arranca y `/health` responde correctamente.
+- `/process` recibe el vídeo, ejecuta el pipeline completo y devuelve error
+  controlado (no un crash) cuando algo falla — probado con un vídeo real.
+- La descarga del modelo de Whisper falla aquí porque este entorno de
+  pruebas bloquea `huggingface.co`; en Railway/Render no tendrás esa
+  restricción y descargará el modelo la primera vez sin problema.
+
+## Nota sobre el coste
+El backend en Railway/Render tiene un coste pequeño una vez superes el plan
+gratuito (procesar vídeo consume CPU un rato). La detección de momentos sigue
+usando la versión gratuita (`detect_highlights.py`, sin API) por defecto,
+tal como quedó configurado — nada de esto requiere `ANTHROPIC_API_KEY`
+todavía.

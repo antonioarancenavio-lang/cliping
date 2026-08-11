@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vigilia — Clips de tu prédica, listos el lunes</title>
+<meta name="description" content="Sube la prédica del domingo y recibe clips verticales con subtítulos, listos para publicar. Sin editor, sin voluntario perdiendo la tarde con Premiere." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-950: #0E1526;
+    --ink-900: #131B31;
+    --ink-800: #1B2540;
+    --ink-700: #2A3557;
+    --line: rgba(242,239,230,0.12);
+    --paper: #F3EFE4;
+    --paper-dim: #C9C3B2;
+    --muted: #9AA4C0;
+    --gold: #D6A75B;
+    --gold-bright: #EBC98A;
+    --ember: #E2703F;
+    --radius: 14px;
+    --container: 1120px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink-950);
+    color:var(--paper);
+    font-family:'Public Sans', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    line-height:1.08;
+    margin:0;
+  }
+  a{color:inherit;}
+  img,svg{display:block;max-width:100%;}
+  .wrap{max-width:var(--container);margin:0 auto;padding:0 24px;}
+  :focus-visible{outline:2px solid var(--gold-bright);outline-offset:3px;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+  }
+
+  /* ---------- top nav ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(14,21,38,0.82);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:18px 24px;}
+  .brand{display:flex; align-items:center; gap:10px; font-family:'Fraunces',serif; font-weight:600; font-size:1.15rem; letter-spacing:0.01em;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--gold); box-shadow:0 0 12px 2px rgba(214,167,91,0.6);}
+  .navlinks{display:flex; gap:32px; font-size:0.92rem; color:var(--muted);}
+  .navlinks a{text-decoration:none; transition:color .15s;}
+  .navlinks a:hover{color:var(--paper);}
+  .nav-cta{
+    font-size:0.88rem; font-weight:600; padding:9px 18px; border-radius:999px;
+    background:var(--gold); color:var(--ink-950); text-decoration:none;
+    transition:transform .15s, background .15s;
+  }
+  .nav-cta:hover{background:var(--gold-bright); transform:translateY(-1px);}
+  .navlinks-mobile{display:none;}
+
+  /* ---------- hero ---------- */
+  .hero{padding:88px 0 64px; position:relative; overflow:hidden;}
+  .hero::before{
+    content:''; position:absolute; inset:-20% -10% auto -10%; height:520px;
+    background: radial-gradient(ellipse at 30% 20%, rgba(214,167,91,0.16), transparent 60%),
+                radial-gradient(ellipse at 80% 10%, rgba(226,112,63,0.10), transparent 55%);
+    pointer-events:none;
+  }
+  .hero-grid{display:grid; grid-template-columns: 1.05fr 0.95fr; gap:56px; align-items:center; position:relative;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:0.78rem; letter-spacing:0.09em; text-transform:uppercase; color:var(--gold-bright);
+    font-weight:600; margin-bottom:20px;
+  }
+  .eyebrow::before{content:'✦'; font-size:0.85rem;}
+  h1.display{font-size:clamp(2.3rem, 4.4vw, 3.6rem); color:var(--paper);}
+  h1.display em{font-style:normal; color:var(--gold-bright);}
+  .hero p.lead{
+    margin-top:22px; font-size:1.12rem; color:var(--paper-dim); max-width:46ch; line-height:1.6;
+  }
+  .hero-actions{display:flex; gap:14px; margin-top:34px; flex-wrap:wrap;}
+  .btn-primary, .btn-ghost{
+    font-family:'Public Sans', sans-serif; font-weight:600; font-size:0.96rem;
+    padding:14px 26px; border-radius:999px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+    transition:transform .15s, background .15s, border-color .15s;
+    border:1px solid transparent; cursor:pointer;
+  }
+  .btn-primary{background:var(--gold); color:var(--ink-950);}
+  .btn-primary:hover{background:var(--gold-bright); transform:translateY(-1px);}
+  .btn-ghost{border-color:var(--line); color:var(--paper);}
+  .btn-ghost:hover{border-color:var(--paper-dim);}
+  .hero-note{margin-top:18px; font-size:0.84rem; color:var(--muted);}
+
+  /* ---------- signature visual: waveform -> vertical clip ---------- */
+  .signature{position:relative; height:420px;}
+  .sig-card{
+    position:absolute; inset:0; border-radius:20px;
+    background:linear-gradient(180deg, var(--ink-800), var(--ink-900));
+    border:1px solid var(--line);
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .sig-wave{position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); opacity:1; transition:opacity .6s ease;}
+  .sig-wave path{stroke:var(--gold); stroke-width:2; fill:none; opacity:0.55;}
+  .sig-wave path:nth-child(1){stroke:var(--gold-bright); opacity:0.9;}
+  .sig-phone{
+    position:relative; width:168px; height:334px; border-radius:26px;
+    background:var(--ink-950); border:2px solid var(--ink-700);
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(214,167,91,0.15);
+    opacity:0; transform:scale(0.9); transition:opacity .7s ease, transform .7s ease;
+    overflow:hidden;
+  }
+  .sig-phone .bar{position:absolute; left:12px; right:12px; height:9px; border-radius:4px; background:rgba(242,239,230,0.85);}
+  .sig-phone .bar.b1{bottom:44px; width:70%;}
+  .sig-phone .bar.b2{bottom:28px; width:46%; background:var(--gold-bright);}
+  .sig-phone .rec{position:absolute; top:12px; left:12px; display:flex; align-items:center; gap:6px; font-size:9px; color:#ff6b6b; font-weight:700; letter-spacing:0.05em;}
+  .sig-phone .rec .r-dot{width:6px; height:6px; border-radius:50%; background:#ff6b6b;}
+  .signature.play .sig-wave{opacity:0;}
+  .signature.play .sig-phone{opacity:1; transform:scale(1);}
+  .sig-caption{position:absolute; bottom:16px; left:16px; right:16px; font-size:0.78rem; color:var(--muted); text-align:center;}
+
+  /* ---------- section shell ---------- */
+  section{padding:88px 0;}
+  .section-head{max-width:640px; margin:0 auto 52px; text-align:center;}
+  .section-head .eyebrow{display:inline-flex;}
+  .section-head h2{font-size:clamp(1.7rem, 3vw, 2.3rem);}
+  .section-head p{color:var(--paper-dim); margin-top:14px; font-size:1.02rem;}
+
+  /* ---------- problem strip ---------- */
+  .problem{background:var(--ink-900); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .problem-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:32px;}
+  .problem-item{padding:28px; border-radius:var(--radius); background:var(--ink-800); border:1px solid var(--line);}
+  .problem-item .num{font-family:'Fraunces',serif; font-size:1.6rem; color:var(--gold); margin-bottom:12px; display:block;}
+  .problem-item h3{font-size:1.05rem; color:var(--paper); margin-bottom:8px;}
+  .problem-item p{color:var(--muted); font-size:0.92rem; margin:0;}
+
+  /* ---------- process (real sequence, numbers justified) ---------- */
+  .process-list{display:flex; flex-direction:column; gap:0; max-width:760px; margin:0 auto;}
+  .process-item{display:grid; grid-template-columns:64px 1fr; gap:20px; padding:28px 0; border-top:1px solid var(--line);}
+  .process-item:last-child{border-bottom:1px solid var(--line);}
+  .process-num{font-family:'Fraunces',serif; font-size:1.3rem; color:var(--gold-bright);}
+  .process-item h3{font-size:1.12rem; color:var(--paper); margin-bottom:6px;}
+  .process-item p{color:var(--muted); margin:0; font-size:0.95rem; max-width:52ch;}
+
+  /* ---------- app / demo ---------- */
+  .app-section{background:var(--ink-900); border-top:1px solid var(--line);}
+  .app-shell{
+    background:var(--ink-800); border:1px solid var(--line); border-radius:20px;
+    padding:8px; max-width:820px; margin:0 auto;
+  }
+  .app-toolbar{display:flex; align-items:center; gap:8px; padding:12px 14px;}
+  .app-toolbar .tdot{width:10px;height:10px;border-radius:50%;}
+  .app-toolbar .tdot:nth-child(1){background:#e2703f;}
+  .app-toolbar .tdot:nth-child(2){background:#d6a75b;}
+  .app-toolbar .tdot:nth-child(3){background:#5b8f6b;}
+  .app-body{background:var(--ink-950); border-radius:14px; padding:40px 32px;}
+  .dropzone{
+    border:1.5px dashed var(--ink-700); border-radius:14px; padding:44px 24px; text-align:center;
+    transition:border-color .15s, background .15s; cursor:pointer;
+  }
+  .dropzone.drag{border-color:var(--gold); background:rgba(214,167,91,0.06);}
+  .dropzone svg{margin:0 auto 16px;}
+  .dropzone h3{font-size:1.05rem; color:var(--paper); margin-bottom:6px; font-family:'Public Sans',sans-serif; font-weight:600;}
+  .dropzone p{color:var(--muted); font-size:0.9rem; margin:0 0 18px;}
+  .dropzone input[type=file]{display:none;}
+  .or-row{display:flex; align-items:center; gap:14px; color:var(--muted); font-size:0.85rem; margin:26px 0;}
+  .or-row::before, .or-row::after{content:''; flex:1; height:1px; background:var(--line);}
+  .url-row{display:flex; gap:10px;}
+  .url-row input[type=text]{
+    flex:1; background:var(--ink-900); border:1px solid var(--ink-700); border-radius:10px;
+    padding:13px 16px; color:var(--paper); font-size:0.92rem; font-family:inherit;
+  }
+  .url-row input::placeholder{color:var(--muted);}
+  .url-row button{white-space:nowrap;}
+
+  .status-box{margin-top:24px; padding:18px 20px; border-radius:12px; background:var(--ink-800); border:1px solid var(--line); font-size:0.9rem; color:var(--paper-dim); display:none;}
+  .status-box.show{display:block;}
+  .status-box strong{color:var(--gold-bright);}
+  .status-list{list-style:none; margin:12px 0 0; padding:0; display:flex; flex-direction:column; gap:8px;}
+  .status-list li{display:flex; align-items:center; gap:10px; font-size:0.86rem; color:var(--muted);}
+  .status-list li .chk{width:16px; height:16px; border-radius:50%; border:1.5px solid var(--ink-700); flex-shrink:0;}
+  .status-list li.done .chk{background:var(--gold); border-color:var(--gold);}
+  .status-list li.done{color:var(--paper-dim);}
+
+  /* ---------- pricing ---------- */
+  .pricing-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:960px; margin:0 auto;}
+  .price-card{background:var(--ink-800); border:1px solid var(--line); border-radius:18px; padding:32px 28px; display:flex; flex-direction:column;}
+  .price-card.featured{border-color:var(--gold); background:linear-gradient(180deg, rgba(214,167,91,0.10), var(--ink-800) 40%); position:relative;}
+  .price-card.featured::before{
+    content:'Más elegido'; position:absolute; top:-12px; left:28px; background:var(--gold); color:var(--ink-950);
+    font-size:0.72rem; font-weight:700; padding:4px 12px; border-radius:999px;
+  }
+  .price-card h3{font-family:'Public Sans',sans-serif; font-size:1rem; font-weight:600; color:var(--paper-dim); text-transform:uppercase; letter-spacing:0.04em; font-size:0.8rem;}
+  .price-amount{font-family:'Fraunces',serif; font-size:2.4rem; color:var(--paper); margin:14px 0 4px;}
+  .price-amount span{font-size:1rem; color:var(--muted); font-family:'Public Sans',sans-serif;}
+  .price-desc{color:var(--muted); font-size:0.88rem; margin-bottom:22px;}
+  .price-list{list-style:none; padding:0; margin:0 0 26px; display:flex; flex-direction:column; gap:11px; flex:1;}
+  .price-list li{display:flex; gap:10px; font-size:0.9rem; color:var(--paper-dim);}
+  .price-list li::before{content:'✓'; color:var(--gold); font-weight:700;}
+  .price-cta{text-align:center; padding:12px; border-radius:10px; border:1px solid var(--ink-700); text-decoration:none; color:var(--paper); font-size:0.9rem; font-weight:600; transition:border-color .15s, background .15s;}
+  .price-card.featured .price-cta{background:var(--gold); color:var(--ink-950); border-color:var(--gold);}
+  .price-cta:hover{border-color:var(--gold-bright);}
+
+  /* ---------- final cta ---------- */
+  .final-cta{text-align:center; padding:100px 0;}
+  .final-cta h2{font-size:clamp(1.9rem,4vw,2.8rem); max-width:16ch; margin:0 auto;}
+  .final-cta p{color:var(--paper-dim); margin:18px auto 32px; max-width:48ch;}
+
+  footer{border-top:1px solid var(--line); padding:36px 0; color:var(--muted); font-size:0.85rem;}
+  .footer-row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;}
+
+  @media (max-width: 860px){
+    .hero-grid{grid-template-columns:1fr; gap:44px;}
+    .signature{height:320px; order:-1;}
+    .problem-grid{grid-template-columns:1fr;}
+    .pricing-grid{grid-template-columns:1fr;}
+    .navlinks{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand"><span class="dot"></span> Vigilia</div>
+    <nav class="navlinks">
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#probar">Probar</a>
+      <a href="#precios">Precios</a>
+    </nav>
+    <a class="nav-cta" href="#probar">Probar gratis</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Para iglesias hispanohablantes</span>
+      <h1 class="display">La prédica del domingo, convertida en <em>clips del lunes</em>.</h1>
+      <p class="lead">Sube el vídeo del servicio y Vigilia encuentra los momentos que merecen ser vistos otra vez: los recorta, los pone en vertical y les pone subtítulos. Sin editor, sin voluntario perdiendo la tarde del lunes con Premiere.</p>
+      <div class="hero-actions">
+        <a href="#probar" class="btn-primary">Probar con tu último servicio</a>
+        <a href="#como-funciona" class="btn-ghost">Ver cómo funciona</a>
+      </div>
+      <p class="hero-note">Primeros 2 vídeos gratis · no hace falta tarjeta</p>
+    </div>
+    <div class="signature" id="signature">
+      <div class="sig-card">
+        <svg class="sig-wave" viewBox="0 0 400 120" width="90%" height="120">
+          <path d="M0,60 Q10,20 20,60 T40,60 T60,30 T80,60 T100,70 T120,40 T140,60 T160,20 T180,60 T200,55 T220,30 T240,60 T260,70 T280,45 T300,60 T320,25 T340,60 T360,50 T380,60 T400,60"/>
+          <path d="M0,60 Q15,80 30,60 T60,60 T90,90 T120,60 T150,60 T180,90 T210,60 T240,60 T270,80 T300,60 T330,60 T360,75 T400,60" style="opacity:0.35"/>
+        </svg>
+        <div class="sig-phone">
+          <div class="rec"><span class="r-dot"></span> CLIP · 00:41</div>
+          <div class="bar b1"></div>
+          <div class="bar b2"></div>
+        </div>
+        <div class="sig-caption">De 42 minutos de prédica a 5 clips de menos de un minuto</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="problem">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">El problema de cada lunes</span>
+      <h2>El mensaje se predica una vez y se ve una vez</h2>
+      <p>El servicio se graba, se sube entero a YouTube… y ahí se queda. Nadie en el equipo tiene tiempo de sentarse a recortarlo cada semana.</p>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-item">
+        <span class="num">45min</span>
+        <h3>de contenido, cero repurposing</h3>
+        <p>Un mensaje completo se predica una sola vez y desaparece en el archivo de YouTube.</p>
+      </div>
+      <div class="problem-item">
+        <span class="num">0</span>
+        <h3>voluntarios con tiempo de editar</h3>
+        <p>El equipo de medios ya hace bastante grabando el servicio en directo cada domingo.</p>
+      </div>
+      <div class="problem-item">
+        <span class="num">€40+/mes</span>
+        <h3>cuestan las herramientas genéricas</h3>
+        <p>Y ninguna entiende el tono ni el ritmo de una prédica: eligen la risa, no el mensaje.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="como-funciona">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Cómo funciona</span>
+      <h2>Tres pasos, sin tocar un editor de vídeo</h2>
+    </div>
+    <div class="process-list">
+      <div class="process-item">
+        <span class="process-num">01</span>
+        <div>
+          <h3>Sube el servicio</h3>
+          <p>Arrastra el archivo o pega el enlace de YouTube/Facebook Live donde lo transmitiste.</p>
+        </div>
+      </div>
+      <div class="process-item">
+        <span class="process-num">02</span>
+        <div>
+          <h3>Vigilia encuentra el mensaje dentro del mensaje</h3>
+          <p>Transcribe la prédica y localiza los fragmentos con más fuerza: frases citables, llamados a la acción, momentos que sostienen una idea completa.</p>
+        </div>
+      </div>
+      <div class="process-item">
+        <span class="process-num">03</span>
+        <div>
+          <h3>Descarga los clips, listos para publicar</h3>
+          <p>Vertical, con subtítulos ya puestos. Solo queda subirlos a Instagram, TikTok o el WhatsApp de la congregación.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="app-section" id="probar">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Pruébalo</span>
+      <h2>Sube tu último servicio</h2>
+      <p>Sin necesidad de crear cuenta para probar. Los primeros dos vídeos son gratis.</p>
+    </div>
+
+    <div class="app-shell">
+      <div class="app-toolbar">
+        <span class="tdot"></span><span class="tdot"></span><span class="tdot"></span>
+      </div>
+      <div class="app-body">
+        <form id="upload-form">
+          <label class="dropzone" id="dropzone" for="file-input">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D6A75B" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+            <h3>Arrastra el vídeo del servicio aquí</h3>
+            <p id="file-label">MP4, MOV o audio del sermón · hasta 2 horas</p>
+            <input type="file" id="file-input" accept="video/*,audio/*" />
+          </label>
+
+          <div class="or-row">o pega un enlace</div>
+
+          <div class="url-row">
+            <input type="text" id="url-input" placeholder="https://youtube.com/watch?v=..." />
+            <button type="submit" class="btn-primary">Generar clips</button>
+          </div>
+        </form>
+
+        <div class="status-box" id="status-box">
+          <div id="status-title">Procesando <strong id="status-filename"></strong>…</div>
+          <ul class="status-list">
+            <li id="step-1"><span class="chk"></span> Transcribiendo el audio</li>
+            <li id="step-2"><span class="chk"></span> Buscando los mejores momentos</li>
+            <li id="step-3"><span class="chk"></span> Recortando y poniendo subtítulos</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="precios">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Precios</span>
+      <h2>Pensado para el presupuesto de una iglesia</h2>
+      <p>Paga por minutos de sermón procesados, no por asiento ni por funciones que no vas a usar.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Comunidad</h3>
+        <div class="price-amount">Gratis</div>
+        <p class="price-desc">Para probar con el último servicio.</p>
+        <ul class="price-list">
+          <li>2 vídeos al mes</li>
+          <li>Hasta 5 clips por vídeo</li>
+          <li>Subtítulos incluidos</li>
+        </ul>
+        <a href="#probar" class="price-cta">Empezar</a>
+      </div>
+      <div class="price-card featured">
+        <h3>Congregación</h3>
+        <div class="price-amount">19€<span>/mes</span></div>
+        <p class="price-desc">Para el servicio de cada domingo.</p>
+        <ul class="price-list">
+          <li>4 vídeos al mes</li>
+          <li>Hasta 8 clips por vídeo</li>
+          <li>Selección de momentos con IA</li>
+          <li>Historial y descarga en lote</li>
+        </ul>
+        <a href="#probar" class="price-cta">Probar gratis 14 días</a>
+      </div>
+      <div class="price-card">
+        <h3>Red de iglesias</h3>
+        <div class="price-amount">A medida</div>
+        <p class="price-desc">Para varias sedes o ministerios.</p>
+        <ul class="price-list">
+          <li>Vídeos ilimitados</li>
+          <li>Varias sedes en una cuenta</li>
+          <li>Soporte directo</li>
+        </ul>
+        <a href="#probar" class="price-cta">Hablar con nosotros</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="wrap">
+    <h2 class="display">Que la prédica de este domingo siga hablando el resto de la semana.</h2>
+    <p>Sube el servicio de este domingo y ten los clips listos antes del lunes.</p>
+    <a href="#probar" class="btn-primary">Probar gratis</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-row">
+    <div class="brand" style="font-size:0.95rem;"><span class="dot"></span> Vigilia</div>
+    <div>Clipping automático de prédicas para iglesias hispanohablantes.</div>
+  </div>
+</footer>
+
+<script>
+  // Animación de la pieza de firma: onda de audio -> clip vertical, en bucle.
+  (function(){
+    const sig = document.getElementById('signature');
+    if (!sig) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { sig.classList.add('play'); return; }
+    let playing = false;
+    function cycle(){
+      playing = !playing;
+      sig.classList.toggle('play', playing);
+    }
+    cycle();
+    setInterval(cycle, 3200);
+  })();
+
+  // Dropzone: estado visual + nombre de archivo.
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('file-input');
+  const fileLabel = document.getElementById('file-label');
+
+  ['dragenter','dragover'].forEach(evt =>
+    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('drag'); })
+  );
+  ['dragleave','drop'].forEach(evt =>
+    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('drag'); })
+  );
+  dropzone.addEventListener('drop', e => {
+    if (e.dataTransfer.files.length){
+      fileInput.files = e.dataTransfer.files;
+      updateFileLabel();
+    }
+  });
+  fileInput.addEventListener('change', updateFileLabel);
+  function updateFileLabel(){
+    if (fileInput.files.length){
+      fileLabel.textContent = fileInput.files[0].name;
+    }
+  }
+
+  // Config: URL del backend de procesamiento (FastAPI con el pipeline).
+  // Mientras no despliegues el backend, esto queda vacío y el formulario
+  // avisa en vez de fallar en silencio.
+  const BACKEND_URL = window.VIGILIA_BACKEND_URL || "";
+
+  const form = document.getElementById('upload-form');
+  const statusBox = document.getElementById('status-box');
+  const statusFilename = document.getElementById('status-filename');
+  const statusTitle = document.getElementById('status-title');
+  const steps = ['step-1','step-2','step-3'];
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const file = fileInput.files[0];
+    const url = document.getElementById('url-input').value.trim();
+
+    if (!file && !url){
+      statusBox.classList.add('show');
+      statusTitle.textContent = 'Sube un vídeo o pega un enlace antes de continuar.';
+      return;
+    }
+
+    statusBox.classList.add('show');
+    statusFilename.textContent = file ? file.name : url;
+    steps.forEach(id => document.getElementById(id).classList.remove('done'));
+
+    if (!BACKEND_URL){
+      statusTitle.innerHTML = 'El backend de procesamiento todavía no está conectado.';
+      document.querySelector('.status-list').insertAdjacentHTML('beforeend',
+        '<li style="color:var(--muted); margin-top:6px;">Esta web ya está lista — falta desplegar el servicio que transcribe y recorta (ver README) y apuntar <code>VIGILIA_BACKEND_URL</code> a esa URL.</li>');
+      return;
+    }
+
+    // Simulación visual de progreso mientras responde el backend real.
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < steps.length){
+        document.getElementById(steps[i]).classList.add('done');
+        i++;
+      }
+    }, 1400);
+
+    try {
+      const body = new FormData();
+      if (file) body.append('file', file);
+      if (url) body.append('url', url);
+
+      const res = await fetch(BACKEND_URL + '/process', { method: 'POST', body });
+      const data = await res.json();
+      clearInterval(interval);
+      steps.forEach(id => document.getElementById(id).classList.add('done'));
+      statusTitle.textContent = data.message || 'Clips generados.';
+    } catch (err) {
+      clearInterval(interval);
+      statusTitle.textContent = 'No se pudo conectar con el backend. Revisa que esté desplegado y accesible.';
+    }
+  });
+</script>
+
+</body>
+</html>
