@@ -1,5 +1,4 @@
 # MVP: Clipping automático para prédicas (nicho: iglesias hispanohablantes)
-
 Pipeline mínimo que convierte un vídeo largo (sermón/prédica) en clips verticales
 con subtítulos, listos para TikTok/Reels/Shorts.
 
